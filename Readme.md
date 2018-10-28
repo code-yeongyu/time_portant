@@ -4,4 +4,4 @@
 
 <p>그래서 여러분들을 자극시키며 일을 성공적으로 수행 할 수 있게 도와줍니다.
 
-모든 개발 기록은 <a href="https://exlock.blogspot.kr/2017/08/timeportant-1.html">Blog</a>에 있습니다.</p>
+플레이스토어에서 TimePortant를 검색하시면 다운로드 받으실 수 있습니다.

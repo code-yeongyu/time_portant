@@ -28,7 +28,6 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     @Override
-    @SuppressWarnings("deprecation")
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(Color.TRANSPARENT);
@@ -83,10 +82,8 @@ public class MainActivity extends AppCompatActivity
         Fragment fragment = null;
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         if (id == R.id.nav_task) {
             fragment = new TaskFragment();
-            //fab.setVisibility(View.VISIBLE);
         }else if (id == R.id.nav_instruction) {
             Intent intent = new Intent(MainActivity.this, InstructionActivity.class);
             startActivity(intent);
@@ -102,7 +99,7 @@ public class MainActivity extends AppCompatActivity
     public boolean onNavigationItemSelected(MenuItem item) {
         changeFragment(item.getItemId());
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }

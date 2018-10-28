@@ -11,22 +11,19 @@ import android.util.Log;
  */
 
 public class TaskDialogReceiver extends BroadcastReceiver {
-    TasksManager tm = new TasksManager();
     @Override
-    @SuppressWarnings("deprecation")
     public void onReceive(Context context, Intent intent) {
         Intent popupIntent = new Intent(context, TaskAlert.class);
         String title = intent.getStringExtra("title");
         int remain = intent.getIntExtra("remain", 4);
         popupIntent.putExtra("title", title);
         popupIntent.putExtra("remain", remain);
-        Log.d("onReceive", remain+"");
 
         PendingIntent pi = PendingIntent.getActivity(context, TasksManager.getID(context, title), popupIntent, PendingIntent.FLAG_ONE_SHOT);
         try {
             pi.send();
         }catch (Exception e){
-            char c;
+            e.printStackTrace();
         }
     }
 }

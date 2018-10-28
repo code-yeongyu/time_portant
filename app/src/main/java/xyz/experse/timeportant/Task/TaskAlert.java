@@ -54,7 +54,7 @@ public class TaskAlert extends AppCompatActivity {
                 .setPositiveButton("네", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        tm.removeTaskFromDB(getApplicationContext(), getID(getApplicationContext(), title));
+                        tm.removeTask(getApplicationContext(), getID(getApplicationContext(), title));
                         tm.cancelDialogAlert(getApplicationContext(), getID(getApplicationContext(), title), remain);
                         dialogInterface.dismiss();
                         finish();

@@ -42,23 +42,24 @@ class TasksManager {
             return false;
         }
         if (time - (ONE_MINUTE * 10) >= Calendar.getInstance().getTimeInMillis()) {
+
+
             AlarmManager am = (AlarmManager) context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
 
-            Intent intent = new Intent(context.getApplicationContext(), TaskNotificationReceiver.class);
-            intent.putExtra("title", title);
+            Intent notification_intent = new Intent(context.getApplicationContext(), TaskNotificationReceiver.class);
+            notification_intent.putExtra("title", title);
 
-            PendingIntent sender = PendingIntent.getBroadcast(context.getApplicationContext(), id, intent, 0);
+            PendingIntent sender = PendingIntent.getBroadcast(context.getApplicationContext(), id, notification_intent, 0);
             if (Build.VERSION.SDK_INT >= 23) {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 10), sender);
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + (ONE_MINUTE / 2), sender);
             } else {
-                am.setExact(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 10), sender);
+                am.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + (ONE_MINUTE / 2), sender);
             }
+            //4
+
+
         }
         if (time - (ONE_MINUTE * 4) >= Calendar.getInstance().getTimeInMillis()) {
-            /*setDialogAlert(context, title, time, 4);
-            setDialogAlert(context, title, time, 2);
-            setDialogAlert(context, title, time, 0);*/
-
             AlarmManager am_dialog_4 = (AlarmManager) context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
 
             Intent dialog_4 = new Intent(context.getApplicationContext(), TaskDialogReceiver.class);
@@ -100,6 +101,7 @@ class TasksManager {
                 am_dialog_4.setExact(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 0), sender_dialog);
             }
             //0
+            //4분, 2분, 0분 alarmmanager 설정
         }
         return true;
     }
@@ -110,11 +112,19 @@ class TasksManager {
         dialog_4.putExtra("title", title);
         dialog_4.putExtra("remain", remain);
 
-        PendingIntent sender_dialog = PendingIntent.getBroadcast(context.getApplicationContext(), TasksManager.getID(context, title) - (10 + 4), dialog_4, 0);
+        PendingIntent sender_dialog =
+                PendingIntent.getBroadcast(context.getApplicationContext(),
+                        TasksManager.getID(context, title) - (10 + 4),
+                        dialog_4,
+                        0);
         if (Build.VERSION.SDK_INT >= 23) {
-            am_dialog_4.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 4), sender_dialog);
+            am_dialog_4.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
+                    time - (ONE_MINUTE * 4),
+                    sender_dialog);
         } else {
-            am_dialog_4.setExact(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 4), sender_dialog);
+            am_dialog_4.setExact(AlarmManager.RTC_WAKEUP,
+                    time - (ONE_MINUTE * 4),
+                    sender_dialog);
         }
     }
     private void removeAlertWithID(Context context, int id) {
@@ -175,14 +185,14 @@ class TasksManager {
             int task_day = cal.get(Calendar.DAY_OF_YEAR);
             int actual_day = getInstance().get(Calendar.DAY_OF_YEAR);
             if (task_day != actual_day) {
-                removeTaskFromDB(context, cursor.getInt(cursor.getColumnIndex(TaskContract.TaskEntry._ID)));
+                removeTask(context, cursor.getInt(cursor.getColumnIndex(TaskContract.TaskEntry._ID)));
             }
         }
         cursor.close();
         mHelper.close();
     }
 
-    proper addTaskToDB(Context context, String task_title, long task_time) {
+    proper addTask(Context context, String task_title, long task_time) {
         switch (isProper(context, task_title, task_time)){
             case TIME_TOO_FAST :
                 return proper.TIME_TOO_FAST;
@@ -205,14 +215,14 @@ class TasksManager {
                 return proper.PASS;
         }
     }
-    void removeTaskFromDB(Context context, int id) {
+    void removeTask(Context context, int id) {
         mHelper = new TaskDBHelper(context);
         SQLiteDatabase db = mHelper.getWritableDatabase();
         db.delete(TaskContract.TaskEntry.TABLE, TaskContract.TaskEntry._ID + "=?", new String[]{id+""});
         db.close();
         removeAlertWithID(context, id);
     }
-    proper editTaskFromDB(Context context, int id, String task_title, long task_time) {
+    proper editTask(Context context, int id, String task_title, long task_time) {
         switch (isProper(context, task_title, task_time)){
             case TIME_TOO_FAST :
                 return proper.TIME_TOO_FAST;

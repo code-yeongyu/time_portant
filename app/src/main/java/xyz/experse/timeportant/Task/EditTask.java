@@ -62,7 +62,7 @@ public class EditTask extends AppCompatActivity {
                 tv.setText(task_hour + " : " + task_minute);
 
             }
-        }, task_hour, task_minute, false).show();//set time and schedule
+        }, task_hour, task_minute, true).show();//set time and schedule
     }
 
     public void onConfirmButtonClicked(View v) {
@@ -76,27 +76,23 @@ public class EditTask extends AppCompatActivity {
         cal.set(Calendar.MINUTE, task_minute);
         task_time = cal.getTimeInMillis();
 
-        switch (tm.editTaskFromDB(getApplicationContext(), task_id, et.getText() + "", task_time)) {
+        switch (tm.editTask(getApplicationContext(), task_id, et.getText() + "", task_time)) {
             case TIME_TOO_FAST:
-                Toast.makeText(getApplicationContext(), "알림이 울릴수 있는 시간으로 설정되어야 합니다.", Toast.LENGTH_LONG).show();
-                Log.d("1", "default");
+                Toast.makeText(getApplicationContext(), "일정은 최소 15분 뒤로 설정되어야 합니다.", Toast.LENGTH_LONG).show();
                 break;
             case TIME_OVERLAP:
-                Log.d("2", "default");
                 Toast.makeText(getApplicationContext(), "같은 시간에 지정된 작업이 있습니다.", Toast.LENGTH_LONG).show();
                 break;
             case TITLE_OVERLAP:
-                Log.d("3", "default");
                 Toast.makeText(getApplicationContext(), "같은 이름으로 지정된 작업이 있습니다.", Toast.LENGTH_LONG).show();
                 break;
             default:
-                Log.d("default", "default");
                 finish();
         }
     }
 
     public void onRemoveButtonClicked(View v) {
-        tm.removeTaskFromDB(getApplicationContext(), task_id);
+        tm.removeTask(getApplicationContext(), task_id);
         finish();
     }
 }

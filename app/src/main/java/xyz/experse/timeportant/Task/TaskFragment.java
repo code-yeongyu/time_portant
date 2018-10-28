@@ -1,5 +1,6 @@
 package xyz.experse.timeportant.Task;
 
+import android.app.NotificationManager;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,6 +9,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -82,7 +84,7 @@ public class TaskFragment extends Fragment {
                                 InputMethodManager mInputMethodManager = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                                 mInputMethodManager.hideSoftInputFromWindow(taskEditText.getWindowToken(), 0);
                                 //hide keyboard
-                                setTime(String.valueOf(taskEditText.getText()), mAdapter);
+                                showTimePicker(String.valueOf(taskEditText.getText()), mAdapter);
                             }
                         })
                         .setNegativeButton("취소", null)
@@ -93,8 +95,8 @@ public class TaskFragment extends Fragment {
 
         //load & RecyclerView settings
     }
-    @SuppressWarnings("deprecation")
-    private void setTime(final String task_title, final TaskAdapter mAdapter) {
+
+    private void showTimePicker(final String task_title, final TaskAdapter mAdapter) {
         new TimePickerDialog(getActivity(), new TimePickerDialog.OnTimeSetListener() {//TimePickerDialog popup
             @Override
             public void onTimeSet(TimePicker timePicker, int i, int i1) {
@@ -110,9 +112,9 @@ public class TaskFragment extends Fragment {
                 }
                 cal.set(Calendar.HOUR_OF_DAY, hour);
                 cal.set(Calendar.MINUTE, minute);
-                switch (tm.addTaskToDB(getActivity(), task_title, cal.getTimeInMillis())) {
+                switch (tm.addTask(getActivity(), task_title, cal.getTimeInMillis())) {
                     case TIME_TOO_FAST :
-                        Toast.makeText(getContext(), "알림이 울릴수 있는 시간으로 설정되어야 합니다.", Toast.LENGTH_LONG).show();
+                        Toast.makeText(getContext(), "일정은 최소 15분 뒤로 설정되어야 합니다.", Toast.LENGTH_LONG).show();
                         break;
                     case TIME_OVERLAP :
                         Toast.makeText(getContext(), "같은 시간에 지정된 작업이 있습니다.", Toast.LENGTH_LONG).show();
@@ -124,7 +126,7 @@ public class TaskFragment extends Fragment {
                         updateUI(mAdapter);
                 }
             }
-        }, Calendar.getInstance().get(Calendar.HOUR_OF_DAY), Calendar.getInstance().get(Calendar.MINUTE), false).show();//set time and schedule
+        }, Calendar.getInstance().get(Calendar.HOUR_OF_DAY), Calendar.getInstance().get(Calendar.MINUTE), true).show();//set time and schedule
     }
 
     private void updateUI(TaskAdapter mAdapter) {
@@ -144,7 +146,7 @@ public class TaskFragment extends Fragment {
     }
     private static class tasksComparator implements Comparator<TaskLists>{
         @Override
-        public int compare(TaskLists o1, TaskLists o2) {
+        public int compare(TaskLists o1, TaskLists o2) { // sort by faster task
             return Long.valueOf(o1.task_time).compareTo(o2.task_time);
         }
     }

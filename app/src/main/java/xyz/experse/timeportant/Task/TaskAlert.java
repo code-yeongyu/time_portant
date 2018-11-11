@@ -16,6 +16,9 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.LinearLayout;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import xyz.experse.timeportant.MainActivity;
 import xyz.experse.timeportant.R;
 
@@ -26,19 +29,18 @@ public class TaskAlert extends AppCompatActivity {
     AlertDialog.Builder builder = null;
     AlertDialog dialog = null;
     String title;
-    int remain;
+    long time;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         tm = new TasksManager();
 
-        Log.d("TaskAlert", "잘 받았다.");
         title = getIntent().getStringExtra("title");
-        remain = getIntent().getIntExtra("remain", 4);
-        Intent dialog_intent = new Intent(getApplicationContext(), TaskDialogReceiver.class);
+        time = getIntent().getLongExtra("time", 0);
 
-        dialog_intent.putExtra("title", title);
-        dialog_intent.putExtra("remain", 4);
+        SimpleDateFormat sdf = new SimpleDateFormat("HH시 mm분");
 
+        Date d = new Date(time);
+        String text = sdf.format(d);
 
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -55,7 +57,7 @@ public class TaskAlert extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         tm.removeTask(getApplicationContext(), getID(getApplicationContext(), title));
-                        tm.cancelDialogAlert(getApplicationContext(), getID(getApplicationContext(), title), remain);
+                        tm.cancelDialogAlert(getApplicationContext(), getID(getApplicationContext(), title), 4);
                         dialogInterface.dismiss();
                         finish();
                     }
@@ -67,41 +69,11 @@ public class TaskAlert extends AppCompatActivity {
                 finish();
             }
         });
-        String gonna_do = "\n일을 시작하시겠습니까?";
-        if(remain != 0)
-            builder.setMessage(title + " 예약 하신 시간까지 "+remain+"분 남았습니다."+gonna_do);
-        else if(remain == 0) {
-            builder.setMessage(title + " 예약하신 시간입니다." + gonna_do);
-            NotificationManager notificationmanager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-            PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-            String text_display = "계획하신 일을 할 시간이 되셨습니다.\n이 앱을 사용하시는 이유를 잊지 마세요!";
-            Notification.Builder builder = new Notification.Builder(getApplicationContext());
-            builder.setContentText(text_display);
-            builder.setSmallIcon(R.mipmap.icon_launcher).setWhen(System.currentTimeMillis())
-                    .setNumber(1).setContentTitle(title).setContentText("계획하신 일을 할 시간이 되셨습니다.")
-                    .setDefaults(Notification.DEFAULT_SOUND | Notification.DEFAULT_VIBRATE).setContentIntent(pendingIntent).setAutoCancel(true);
-            Notification.BigTextStyle style = new Notification.BigTextStyle(builder);
-            style.bigText(text_display);
-            style.setSummaryText("TimePortant");
-            builder.setStyle(style);
-            notificationmanager.notify(1, builder.build());
-        }
+
+        builder.setMessage(text+"에 "+title+"을 하기로 하셨습니다.\n일을 시작하시겠습니까?");
         dialog = builder.create();
         dialog.show();
     }
-        /*setContentView(R.layout.activity_task_alert);
-
-
-        TextView task_label = (TextView) findViewById(R.id.task_label);
-
-    }
-    public void onTaskYes(View v){
-
-
-    }
-    public void onTaskNo(View v){
-        finish();
-    }*/
 
     public void registReceive() {
         IntentFilter filter = new IntentFilter();

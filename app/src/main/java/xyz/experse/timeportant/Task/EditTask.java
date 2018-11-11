@@ -68,7 +68,6 @@ public class EditTask extends AppCompatActivity {
     public void onConfirmButtonClicked(View v) {
         EditText et = (EditText) findViewById(R.id.task_title_edit);
         task_title = et.getText() + "";
-        Log.d(et.getText() + "", et.getText() + "");
 
         Calendar cal = Calendar.getInstance();
         cal.set(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DATE), task_hour, task_minute, 0);

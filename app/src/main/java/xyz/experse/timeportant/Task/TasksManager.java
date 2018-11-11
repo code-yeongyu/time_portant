@@ -8,7 +8,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
+import android.util.Log;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -31,19 +33,18 @@ class TasksManager {
         PASS, TIME_OVERLAP, TIME_TOO_FAST, TITLE_OVERLAP
     }
 
-    final static long ONE_MINUTE = 60000;
+    private final static long ONE_MINUTE = 60000;
     private TaskDBHelper mHelper;
     private ArrayList<String> taskTitle;
     private ArrayList<Long> taskTime;
     //Syncing alert with DB
     private boolean addAlert(Context context, String title, long time) {
         int id = getID(context, title);
+        long long_time = time;
         if(time - (ONE_MINUTE * 10) <= Calendar.getInstance().getTimeInMillis() && time - (ONE_MINUTE * 4) <= Calendar.getInstance().getTimeInMillis()) {
             return false;
         }
         if (time - (ONE_MINUTE * 10) >= Calendar.getInstance().getTimeInMillis()) {
-
-
             AlarmManager am = (AlarmManager) context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
 
             Intent notification_intent = new Intent(context.getApplicationContext(), TaskNotificationReceiver.class);
@@ -51,81 +52,24 @@ class TasksManager {
 
             PendingIntent sender = PendingIntent.getBroadcast(context.getApplicationContext(), id, notification_intent, 0);
             if (Build.VERSION.SDK_INT >= 23) {
-                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + (ONE_MINUTE / 2), sender);
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 10), sender);
             } else {
-                am.setExact(AlarmManager.RTC_WAKEUP, Calendar.getInstance().getTimeInMillis() + (ONE_MINUTE / 2), sender);
+                am.setExact(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 10), sender);
             }
-            //4
-
-
         }
+        //10
         if (time - (ONE_MINUTE * 4) >= Calendar.getInstance().getTimeInMillis()) {
             AlarmManager am_dialog_4 = (AlarmManager) context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
 
-            Intent dialog_4 = new Intent(context.getApplicationContext(), TaskDialogReceiver.class);
-            dialog_4.putExtra("title", title);
-            dialog_4.putExtra("remain", 4);
-
-            PendingIntent sender_dialog_4 = PendingIntent.getBroadcast(context.getApplicationContext(), TasksManager.getID(context, title) - (10 + 4), dialog_4, 0);
-            if (Build.VERSION.SDK_INT >= 23) {
-                am_dialog_4.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 4), sender_dialog_4);
-            } else {
-                am_dialog_4.setExact(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 4), sender_dialog_4);
-            }
-            //4
-
-            AlarmManager am_dialog_2 = (AlarmManager) context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-
-            Intent dialog_2 = new Intent(context.getApplicationContext(), TaskDialogReceiver.class);
-            dialog_2.putExtra("title", title);
-            dialog_2.putExtra("remain", 2);
-
-            PendingIntent sender_dialog_2 = PendingIntent.getBroadcast(context.getApplicationContext(), TasksManager.getID(context, title) - (10 + 2), dialog_2, 0);
-            if (Build.VERSION.SDK_INT >= 23) {
-                am_dialog_2.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 2), sender_dialog_2);
-            } else {
-                am_dialog_2.setExact(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 2), sender_dialog_2);
-            }
-            //2
-
-            AlarmManager am_dialog = (AlarmManager) context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-
             Intent dialog = new Intent(context.getApplicationContext(), TaskDialogReceiver.class);
             dialog.putExtra("title", title);
-            dialog.putExtra("remain", 0);
+            dialog.putExtra("time", long_time);
 
-            PendingIntent sender_dialog = PendingIntent.getBroadcast(context.getApplicationContext(), TasksManager.getID(context, title) - (10 + 0), dialog, 0);
-            if (Build.VERSION.SDK_INT >= 23) {
-                am_dialog_4.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 0), sender_dialog);
-            } else {
-                am_dialog_4.setExact(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 0), sender_dialog);
-            }
-            //0
-            //4분, 2분, 0분 alarmmanager 설정
+            PendingIntent sender_dialog_4 = PendingIntent.getBroadcast(context.getApplicationContext(), TasksManager.getID(context, title) - (10 + 4), dialog, 0);
+
+            am_dialog_4.setInexactRepeating(AlarmManager.RTC_WAKEUP, time - (ONE_MINUTE * 4), ONE_MINUTE, sender_dialog_4);
         }
         return true;
-    }
-    private void setDialogAlert(Context context, String title, long time, int remain){
-        AlarmManager am_dialog_4 = (AlarmManager) context.getApplicationContext().getSystemService(Context.ALARM_SERVICE);
-
-        Intent dialog_4 = new Intent(context.getApplicationContext(), TaskDialogReceiver.class);
-        dialog_4.putExtra("title", title);
-        dialog_4.putExtra("remain", remain);
-
-        PendingIntent sender_dialog =
-                PendingIntent.getBroadcast(context.getApplicationContext(),
-                        TasksManager.getID(context, title) - (10 + 4),
-                        dialog_4,
-                        0);
-        if (Build.VERSION.SDK_INT >= 23) {
-            am_dialog_4.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP,
-                    time - (ONE_MINUTE * 4),
-                    sender_dialog);
-        } else {
-            am_dialog_4.setExact(AlarmManager.RTC_WAKEUP,
-                    time - (ONE_MINUTE * 4),
-                    sender_dialog);
-        }
     }
     private void removeAlertWithID(Context context, int id) {
         AlarmManager am = (AlarmManager)context.getSystemService(Context.ALARM_SERVICE);
@@ -136,8 +80,6 @@ class TasksManager {
             am.cancel(sender);
         }
         cancelDialogAlert(context, id, 4);
-        cancelDialogAlert(context, id, 2);
-        cancelDialogAlert(context, id, 0);
     }
     void cancelDialogAlert(Context context, int id, int remain){
 
@@ -157,7 +99,7 @@ class TasksManager {
     //Alert managing
     private proper isProper(Context context, String title, long time) {
 
-        if(time - (ONE_MINUTE * 10) <= Calendar.getInstance().getTimeInMillis() && time - (ONE_MINUTE * 4) <= Calendar.getInstance().getTimeInMillis()) {//if requested time is less than current time + 15
+        if(time - (ONE_MINUTE * 15) <= Calendar.getInstance().getTimeInMillis() && time - (ONE_MINUTE * 4) <= Calendar.getInstance().getTimeInMillis()) {//if requested time is less than current time + 15
             return proper.TIME_TOO_FAST;
         } else {
             for (int i = 0; i < getTaskTimeArray(context, false).size(); i++) {

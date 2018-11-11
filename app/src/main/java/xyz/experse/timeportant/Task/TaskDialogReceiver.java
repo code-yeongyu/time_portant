@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by experse on 17. 8. 22.
  */
@@ -15,9 +18,9 @@ public class TaskDialogReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Intent popupIntent = new Intent(context, TaskAlert.class);
         String title = intent.getStringExtra("title");
-        int remain = intent.getIntExtra("remain", 4);
+        long time = intent.getLongExtra("time", 0);
         popupIntent.putExtra("title", title);
-        popupIntent.putExtra("remain", remain);
+        popupIntent.putExtra("time", time);
 
         PendingIntent pi = PendingIntent.getActivity(context, TasksManager.getID(context, title), popupIntent, PendingIntent.FLAG_ONE_SHOT);
         try {
